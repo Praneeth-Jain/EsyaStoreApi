@@ -1,0 +1,102 @@
+@EsyaStoreApi_HostAddress = http://localhost:5139/api
+
+GET {{EsyaStoreApi_HostAddress}}/users
+Accept: application/json
+
+###
+POST {{EsyaStoreApi_HostAddress}}/users
+Content-Type: application/json
+
+ {
+        "name": "Rahul",
+        "email": "rahul@mail.com",
+        "password": "12345678",
+        "contact": "94365443543",
+        "isActiveUser": 1
+ }
+
+ ###
+ PUT {{EsyaStoreApi_HostAddress}}/users/4
+Content-Type: application/json
+
+ {
+        "name": "Rahul Vishwa",
+        "password": "12345321",
+        "contact": "94365443543",
+        "isActiveUser": 1
+ }
+
+ ###
+ DELETE {{EsyaStoreApi_HostAddress}}/users/2
+
+ ###
+POST {{EsyaStoreApi_HostAddress}}/sellers
+Content-Type: application/json
+
+ {
+    "name": "John",
+    "email": "john@mi.com",
+    "password": "123123123",
+    "contact": "976574635",
+    "location": "Punjab",
+    "isActiveSeller": 1
+}
+
+###
+PUT {{EsyaStoreApi_HostAddress}}/sellers/4
+Content-Type: application/json
+
+ {
+    "name": "John Smilga",
+    "password": "123123123"l,
+    "contact": "976574635",
+    "location": "Punjab",
+    "isActiveSeller": 1
+}
+
+ ###
+ DELETE {{EsyaStoreApi_HostAddress}}/sellers/4
+ 
+###
+POST {{EsyaStoreApi_HostAddress}}/Products
+Content-Type: application/json
+
+ {
+        "productName": "Apple SmartWatch",
+        "productDescription": "SmartWatch for daily use",
+        "productPrice": 30000,
+        "productQuantity": 10,
+        "productCategory": "SmartWatch",
+        "manufacturer": "Apple Inc",
+        "prodImgUrl": "c.jpg",
+        "sellerId": 1,
+        "discount": 15
+ }
+
+  
+###
+PUT {{EsyaStoreApi_HostAddress}}/Products/2
+Content-Type: application/json
+
+ {
+        "productName": "Apple SmartWatch",
+        "productDescription": "SmartWatch for daily use",
+        "productPrice": 30000,
+        "productQuantity": 20,
+        "productCategory": "SmartWatch",
+        "manufacturer": "Apple Inc",
+        "prodImgUrl": "c.jpg",
+        "discount": 15
+ }
+
+###
+DELETE {{EsyaStoreApi_HostAddress}}/products/2
+
+###
+POST {{EsyaStoreApi_HostAddress}}/users/login
+Content-Type: application/json
+
+    {
+         "email": "kl@mail.com",
+        "password": "12345678"
+    }
