@@ -12,7 +12,7 @@ namespace EsyaStoreApi.Controllers
     [ApiController]
     public class CartsController : ControllerBase
     {
-        private readonly ApplicationDbContext _context;
+        private readonly ApplicationDbContext _context;  
         public CartsController(ApplicationDbContext context)
         {
             _context = context;
@@ -20,25 +20,25 @@ namespace EsyaStoreApi.Controllers
   
         [HttpGet("{userID}")]
         [Authorize(Policy ="UserPolicy")]
-        public IActionResult GetCartItems(int userid) {
-            var user=_context.users.Find(userid);
+        public async Task <IActionResult> GetCartItems(int userid) {
+            var user=await _context.users.FindAsync(userid);
             if (user == null) { return NotFound("User not found."); };
             var userClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             if (user.Id.ToString() != userClaim)
             {
                 return Unauthorized("You are not authorized to access this cart.");
             }
-            var cartitems=_context.cart.Where(c=>c.UserId == userid).ToList();
+            var cartitems=await _context.cart.Where(c=>c.UserId == userid).ToListAsync();
             return Ok(cartitems);
         }
 
         [HttpPost]
         [Authorize(Policy = "UserPolicy")]
-        public IActionResult AddItemstoCart(AddtoCartDTO cartDto)
+        public async Task<IActionResult> AddItemstoCart(AddtoCartDTO cartDto)
         {
-            var user = _context.users.Find(cartDto.UserId);
+            var user =await _context.users.FindAsync(cartDto.UserId);
             if (user == null) { return NotFound("The given user is not found."); };
-            var product=_context.products.Find(cartDto.ProductId);
+            var product=await _context.products.FindAsync(cartDto.ProductId);
             if (product == null) { return NotFound("The product specified is not found."); };
             var userClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             if (user.Id.ToString() != userClaim)
@@ -50,20 +50,20 @@ namespace EsyaStoreApi.Controllers
                 ProductId = product.Id,
                 UserId = user.Id
             };
-            _context.cart.Add(NewCart);
-            _context.SaveChanges();
+            await _context.cart.AddAsync(NewCart);
+            await _context.SaveChangesAsync();
             return Created();
         }
 
         [HttpDelete("{id}")]
         [Authorize(Policy ="UserPolicy")]
-        public IActionResult DeleteCartItem(int id) { 
+        public async Task<IActionResult> DeleteCartItem(int id) { 
             var userClaim=User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            var cartItem = _context.cart.Find(id);
+            var cartItem = await _context.cart.FindAsync(id);
             if (cartItem == null) { return NotFound("Cart not found."); };
             if (cartItem.UserId.ToString() != userClaim) { return Unauthorized("You are not authorized to remove item from this cart."); };
             _context.cart.Remove(cartItem);
-            _context.SaveChanges();
+            await _context.SaveChangesAsync();
             return NoContent();
         }
     }

@@ -6,6 +6,7 @@ using EsyaStoreApi.Model;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace EsyaStoreApi.Controllers
 {
@@ -23,9 +24,9 @@ namespace EsyaStoreApi.Controllers
         }
 
         [HttpPost("login")]
-        public IActionResult Login(LoginDto loginDto)
+        public async Task<IActionResult> Login(LoginDto loginDto)
         {
-            var user=_context.users.FirstOrDefault(u=>u.Email==loginDto.Email&&u.Password==loginDto.Password);
+            var user=await _context.users.FirstOrDefaultAsync(u=>u.Email==loginDto.Email&&u.Password==loginDto.Password);
             if ( user is null)
             {
                 return Unauthorized("Invalid Credentials");
@@ -40,8 +41,8 @@ namespace EsyaStoreApi.Controllers
 
         [HttpGet]
         [Authorize(Policy ="UserPolicy")]
-        public IActionResult GetUsers() {
-           var users= _context.users.ToList();
+        public async Task<IActionResult> GetUsers() {
+           var users=await _context.users.ToListAsync();
             if(users is null)
             {
                 return NotFound();
@@ -65,8 +66,8 @@ namespace EsyaStoreApi.Controllers
 
         [HttpGet("{id}")]
         [Authorize(Policy = "UserPolicy")]
-        public IActionResult GetSpecificUser(int id) { 
-          var user= _context.users.Find(id);
+        public async Task<IActionResult> GetSpecificUser(int id) { 
+          var user=await _context.users.FindAsync(id);
             if (user is null) { 
                 return NotFound();
             }
@@ -81,7 +82,7 @@ namespace EsyaStoreApi.Controllers
         }
 
         [HttpPost("/Register")]
-        public IActionResult Register(CreateUserDTO newuser)
+        public async Task<IActionResult> Register(CreateUserDTO newuser)
         {
             var user = new Users
             {
@@ -93,13 +94,13 @@ namespace EsyaStoreApi.Controllers
             };
 
             _context.users.Add(user);
-            _context.SaveChanges();
+            await _context.SaveChangesAsync();
             return CreatedAtAction(nameof(GetSpecificUser),new {id=user.Id},user);
         }
 
         [HttpPut("{id}")]
         [Authorize(Policy = "UserPolicy")]
-        public IActionResult EditUsers(int id,UpdateUserDTO EditUser) {
+        public async Task<IActionResult> EditUsers(int id,UpdateUserDTO EditUser) {
             var userClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             if (userClaim != null)
             {
@@ -109,7 +110,7 @@ namespace EsyaStoreApi.Controllers
             {
                 return Forbid("You are not authorized to edit this user's information.");
             }
-            var existingUser=_context.users.Find(id);
+            var existingUser=await _context.users.FindAsync(id);
             if (existingUser is null)
             {
                 return NotFound();
@@ -119,14 +120,14 @@ namespace EsyaStoreApi.Controllers
             existingUser.isActiveUser= EditUser.isActiveUser;
             existingUser.Password = EditUser.Password;
 
-            _context.SaveChanges();
+            await _context.SaveChangesAsync();
             return NoContent();
         }
 
         [HttpDelete("{id}")]
         [Authorize(Policy = "UserPolicy")]
-        public IActionResult DeleteUser(int id) {
-            var userClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        public async Task<IActionResult> DeleteUser(int id) {
+            var userClaim =User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             if (userClaim == null)
             {
                 return Unauthorized("Invalid token. User ID not found.");
@@ -135,13 +136,13 @@ namespace EsyaStoreApi.Controllers
             {
                 return StatusCode(403, new { Message = "You are not authorized to edit this user's information." });
             }
-            var deleteUser= _context.users.Find(id);
+            var deleteUser=await _context.users.FindAsync(id);
             if(deleteUser is null)
             {
                 return NotFound();
             }
             _context.users.Remove(deleteUser);
-            _context.SaveChanges();
+            await _context.SaveChangesAsync();
             return NoContent();
         }
     }

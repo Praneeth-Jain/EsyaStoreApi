@@ -3,6 +3,7 @@ using EsyaStore.Data.Entity;
 using EsyaStoreApi.Model;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace EsyaStoreApi.Controllers
 {
@@ -18,9 +19,9 @@ namespace EsyaStoreApi.Controllers
         }
 
         [HttpGet]
-        public IActionResult GetAllProducts()
+        public async Task<IActionResult> GetAllProducts()
         {
-            var products=_context.products.ToList();
+            var products=await _context.products.ToListAsync();
             if(products is null)
             {
                 return NotFound();
@@ -29,8 +30,8 @@ namespace EsyaStoreApi.Controllers
         }
 
         [HttpGet("{id}")]
-        public IActionResult GetProduct(int id) {
-            var product = _context.products.Find(id);
+        public async Task<IActionResult> GetProduct(int id) {
+            var product =await _context.products.FindAsync(id);
             if (product is null)
             {
                 return NotFound();
@@ -40,7 +41,7 @@ namespace EsyaStoreApi.Controllers
         }
 
         [HttpPost]
-        public IActionResult PostProduct(CreateProductDTO newProduct)
+        public async Task<IActionResult> PostProduct(CreateProductDTO newProduct)
         {
             var product = new Products
             {
@@ -56,13 +57,13 @@ namespace EsyaStoreApi.Controllers
                 SellerId = newProduct.SellerId
             };
             _context.products.Add(product);
-            _context.SaveChanges();
+            await _context.SaveChangesAsync();
             return CreatedAtAction(nameof(GetProduct),new {id=product.Id},product);
         }
 
         [HttpPut("{id}")]
-        public IActionResult EditProduct(int id,UpdateProductDTO editProduct) { 
-            var product= _context.products.Find(id);
+        public async Task<IActionResult> EditProduct(int id,UpdateProductDTO editProduct) { 
+            var product=await _context.products.FindAsync(id);
             if(product is null) { return NotFound(); }
             product.ProductName=editProduct.ProductName;
             product.ProductDescription=editProduct.ProductDescription;
@@ -74,16 +75,16 @@ namespace EsyaStoreApi.Controllers
             product.FinalPrice = editProduct.ProductPrice - ((editProduct.ProductPrice * editProduct.Discount)/100);
             product.ProdImgUrl=editProduct.ProdImgUrl;
 
-            _context.SaveChanges();
+            await _context.SaveChangesAsync();
             return NoContent();
         }
 
         [HttpDelete("{id}")]
-        public IActionResult DeleteProduct(int id) {
-            var product=_context.products.Find(id);
+        public async Task<IActionResult> DeleteProduct(int id) {
+            var product=await _context.products.FindAsync(id);
             if (product is null) { return NotFound(); }
             _context.products.Remove(product);
-            _context.SaveChanges();
+            await _context.SaveChangesAsync();
             return NoContent();
         }
 

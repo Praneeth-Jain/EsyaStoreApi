@@ -5,6 +5,7 @@ using EsyaStoreApi.Model;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace EsyaStoreApi.Controllers
 {
@@ -20,9 +21,9 @@ namespace EsyaStoreApi.Controllers
         }
 
         [HttpGet("{prodId}")]
-        public IActionResult GetAllReviews(int ProdId)
+        public async Task<IActionResult> GetAllReviews(int ProdId)
         {
-            var review = _context.reviews.Where(r => r.ProductID == ProdId).ToList();
+            var review = await _context.reviews.Where(r => r.ProductID == ProdId).ToListAsync();
             if (review is null)
             {
                 return NotFound("No review found for this product.");
@@ -32,8 +33,8 @@ namespace EsyaStoreApi.Controllers
             {
             var thisrev=new ReviewDetailsDTO
             {
-                ProductName = _context.products.Where(p => p.Id == rev.ProductID).Select(p => p.ProductName).FirstOrDefault(),
-                UserName = _context.users.Where(u=>u.Id==rev.UserID).Select(u=>u.Name).FirstOrDefault(),
+                ProductName =await _context.products.Where(p => p.Id == rev.ProductID).Select(p => p.ProductName).FirstOrDefaultAsync(),
+                UserName =await _context.users.Where(u=>u.Id==rev.UserID).Select(u=>u.Name).FirstOrDefaultAsync(),
                 ReviewDate = rev.ReviewDate,
                 ReviewDescription = rev.ReviewDescription,
                 Stars=rev.Stars
@@ -47,14 +48,14 @@ namespace EsyaStoreApi.Controllers
 
         [HttpPost]
         [Authorize(Policy = "UserPolicy")]
-        public IActionResult AddReview(AddReviewDTO newReview)
+        public async Task<IActionResult> AddReview(AddReviewDTO newReview)
         {
             var UserClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             if (UserClaim == null) { return Unauthorized(); };
             if (UserClaim != newReview.UserID.ToString()) { return Unauthorized("You are not authorized to add this review"); }
-            var order=_context.orders.Where(o=>o.UserId==newReview.UserID && o.ProductId==newReview.ProductID).FirstOrDefault();
+            var order=await _context.orders.Where(o=>o.UserId==newReview.UserID && o.ProductId==newReview.ProductID).FirstOrDefaultAsync();
             if (order == null) { return BadRequest("You have not ordered this product to review."); };
-            var review=_context.reviews.Where(r=>r.UserID==newReview.UserID && r.ProductID==newReview.ProductID).FirstOrDefault();
+            var review=await _context.reviews.Where(r=>r.UserID==newReview.UserID && r.ProductID==newReview.ProductID).FirstOrDefaultAsync();
             if (review != null) { return BadRequest("You have already provided the review for this product."); };
                 var addReview = new Reviews()
             {
@@ -65,7 +66,7 @@ namespace EsyaStoreApi.Controllers
                 ReviewDescription = newReview.ReviewDescription
             };
             _context.reviews.Add(addReview);
-            _context.SaveChanges();
+            await _context.SaveChangesAsync();
             return Created();
         }
     }

@@ -2,6 +2,7 @@
 using EsyaStore.Data.Entity;
 using EsyaStoreApi.Model;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace EsyaStoreApi.Controllers
 {
@@ -18,8 +19,8 @@ namespace EsyaStoreApi.Controllers
 
         
         [HttpGet]
-        public IActionResult GetAllSellers() { 
-            var seller=_context.sellers.ToList();
+        public async Task<IActionResult> GetAllSellers() { 
+            var seller=await _context.sellers.ToListAsync();
             if(seller is null)
             {
                 return NotFound();
@@ -28,9 +29,9 @@ namespace EsyaStoreApi.Controllers
         }
 
         [HttpGet("{id}")]
-        public IActionResult GetSeller(int id)
+        public async Task<IActionResult> GetSeller(int id)
         {
-            var seller = _context.sellers.Find(id);
+            var seller =await _context.sellers.FindAsync(id);
             if (seller is null) { 
                 return NotFound();
             }
@@ -38,7 +39,7 @@ namespace EsyaStoreApi.Controllers
         }
 
         [HttpPost]
-        public IActionResult PostSeller(CreateSellerDTO newSeller)
+        public async Task<IActionResult> PostSeller(CreateSellerDTO newSeller)
         {
             var seller = new Sellers
             {
@@ -50,14 +51,14 @@ namespace EsyaStoreApi.Controllers
                 isActiveSeller = newSeller.isActiveSeller
             };
             _context.sellers.Add(seller);
-            _context.SaveChanges();
+            await _context.SaveChangesAsync());
             return CreatedAtAction(nameof(GetSeller),new {id=seller.Id}, seller);
         }
 
         [HttpPut("{id}")]
-        public IActionResult PutSeller(int id,UpdateSellerDTO editSeller)
+        public async Task<IActionResult> PutSeller(int id,UpdateSellerDTO editSeller)
         {
-            var seller= _context.sellers.Find(id);
+            var seller=await _context.sellers.FindAsync(id);
             if (seller is null)
             {
                 return NotFound();
@@ -68,19 +69,19 @@ namespace EsyaStoreApi.Controllers
             seller.isActiveSeller = editSeller.isActiveSeller;
             seller.Contact = editSeller.Contact;
 
-            _context.SaveChanges();
+            await _context.SaveChangesAsync();
             return NoContent();
         }
 
         [HttpDelete("{id}")]
-        public IActionResult DeleteSeller(int id) {
-            var seller = _context.sellers.Find(id);
+        public async Task<IActionResult> DeleteSeller(int id) {
+            var seller =await _context.sellers.FindAsync(id);
             if(seller is null)
             {
                 return NotFound();
             }
             _context.sellers.Remove(seller);
-            _context.SaveChanges();
+            await _context.SaveChangesAsync();
             return NoContent();
         }
     }
