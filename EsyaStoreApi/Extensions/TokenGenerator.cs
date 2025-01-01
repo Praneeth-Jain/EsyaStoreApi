@@ -5,8 +5,6 @@ using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 
 
-
-
 namespace EsyaStoreApi.Extensions
 {
      public class TokenGenerator
