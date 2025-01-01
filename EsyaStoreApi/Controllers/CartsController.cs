@@ -10,16 +10,14 @@ namespace EsyaStoreApi.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class CartController : ControllerBase
+    public class CartsController : ControllerBase
     {
-
         private readonly ApplicationDbContext _context;
-        public CartController(ApplicationDbContext context)
+        public CartsController(ApplicationDbContext context)
         {
             _context = context;
         }
-
-        
+  
         [HttpGet("{userID}")]
         [Authorize(Policy ="UserPolicy")]
         public IActionResult GetCartItems(int userid) {
