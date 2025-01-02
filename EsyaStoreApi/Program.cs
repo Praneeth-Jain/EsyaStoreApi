@@ -38,6 +38,9 @@ builder.Services.AddAuthorization(options =>
 {
     options.AddPolicy("UserPolicy", policy => policy.RequireClaim("UserType", "User"));
     options.AddPolicy("SellerPolicy", policy => policy.RequireClaim("UserType", "Seller"));
+    options.AddPolicy("UsernSellerPolicy", policy => policy.RequireAssertion(c=>
+    c.User.HasClaim(c=>
+    c.Type=="UserType" && c.Value == "User" || c.Value == "Seller")));
 });
 
 

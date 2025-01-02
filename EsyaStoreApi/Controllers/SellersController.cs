@@ -1,6 +1,9 @@
-﻿using EsyaStore.Data.Context;
+﻿using System.Security.Claims;
+using EsyaStore.Data.Context;
 using EsyaStore.Data.Entity;
+using EsyaStoreApi.Extensions;
 using EsyaStoreApi.Model;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -12,12 +15,32 @@ namespace EsyaStoreApi.Controllers
     {
         private readonly ApplicationDbContext _context;
 
-        public SellersController(ApplicationDbContext context)
+        private readonly TokenGenerator _jwtTokenGenerator;
+
+        public SellersController(ApplicationDbContext context,TokenGenerator tokenGenerator)
         {
             _context = context;
+            _jwtTokenGenerator = tokenGenerator;
         }
 
-        
+        [HttpPost("login")]
+        public async Task<IActionResult> LoginSeller(LoginDto loginDto)
+        {
+            var seller = await _context.sellers.FirstOrDefaultAsync(s => s.Email == loginDto.Email && s.Password == loginDto.Password);
+            if (seller is null)
+            {
+                return Unauthorized("Invalid Credentials");
+            }
+
+            var token = _jwtTokenGenerator.CreateToken(seller.Name, seller.Email, seller.Id, loginDto.UserType);
+
+            return Ok(new { token });
+
+
+        }
+
+
+
         [HttpGet]
         public async Task<IActionResult> GetAllSellers() { 
             var seller=await _context.sellers.ToListAsync();
@@ -39,7 +62,7 @@ namespace EsyaStoreApi.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> PostSeller(CreateSellerDTO newSeller)
+        public async Task<IActionResult> Register(CreateSellerDTO newSeller)
         {
             var seller = new Sellers
             {
@@ -51,14 +74,17 @@ namespace EsyaStoreApi.Controllers
                 isActiveSeller = newSeller.isActiveSeller
             };
             _context.sellers.Add(seller);
-            await _context.SaveChangesAsync());
+            await _context.SaveChangesAsync();
             return CreatedAtAction(nameof(GetSeller),new {id=seller.Id}, seller);
         }
 
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutSeller(int id,UpdateSellerDTO editSeller)
+        [Authorize(Policy = "SellerPolicy")]
+        public async Task<IActionResult> EditSeller(int id,UpdateSellerDTO editSeller)
         {
-            var seller=await _context.sellers.FindAsync(id);
+            var sellerClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (sellerClaim != id.ToString()) { return Unauthorized("You are not authorized to edit."); };
+            var seller =await _context.sellers.FindAsync(id);
             if (seller is null)
             {
                 return NotFound();
@@ -74,7 +100,10 @@ namespace EsyaStoreApi.Controllers
         }
 
         [HttpDelete("{id}")]
+        [Authorize(Policy ="SellerPolicy")]
         public async Task<IActionResult> DeleteSeller(int id) {
+            var sellerClaim=User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (sellerClaim != id.ToString()) { return Unauthorized("You are not authorized to delete."); };
             var seller =await _context.sellers.FindAsync(id);
             if(seller is null)
             {

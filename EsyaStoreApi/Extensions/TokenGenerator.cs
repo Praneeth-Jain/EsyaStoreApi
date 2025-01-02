@@ -13,13 +13,13 @@ namespace EsyaStoreApi.Extensions
         public TokenGenerator(IConfiguration _configuration) {
             configuration = _configuration;
         }
-        public string CreateToken(Users user,string role)
+        public string CreateToken(string Name,string Email,int Id,string role)
         {
             var claims = new[]
             {
-                new Claim(ClaimTypes.Name, user.Name),
-                new Claim(ClaimTypes.Email, user.Email),
-                new Claim(ClaimTypes.NameIdentifier,user.Id.ToString()),
+                new Claim(ClaimTypes.Name, Name),
+                new Claim(ClaimTypes.Email, Email),
+                new Claim(ClaimTypes.NameIdentifier,Id.ToString()),
                 new Claim("UserType",role)
             };
 

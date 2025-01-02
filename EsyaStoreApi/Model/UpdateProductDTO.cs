@@ -27,5 +27,6 @@ namespace EsyaStoreApi.Model
         [Range(0, 100)]
         public int Discount { get; set; } = 0;
 
+
     }
 }

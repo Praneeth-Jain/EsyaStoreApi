@@ -32,7 +32,7 @@ namespace EsyaStoreApi.Controllers
                 return Unauthorized("Invalid Credentials");
             }
 
-            var token=_jwtTokenGenerator.CreateToken(user,loginDto.UserType);
+            var token=_jwtTokenGenerator.CreateToken(user.Name,user.Email,user.Id,loginDto.UserType);
 
             return Ok(new { token });
 
